@@ -278,7 +278,6 @@ func (a *Archiver) backfillBlobs(ctx context.Context, latest *v1.BeaconBlockHead
 
 	backfillLoop := func(start *v1.BeaconBlockHeader, current *v1.BeaconBlockHeader) {
 		curr, alreadyExists, err := current, false, error(nil)
-		count := 0
 		a.log.Info("backfill process initiated",
 			"currHash", curr.Root.String(),
 			"currSlot", curr.Header.Message.Slot,
@@ -318,11 +317,8 @@ func (a *Archiver) backfillBlobs(ctx context.Context, latest *v1.BeaconBlockHead
 				a.metrics.RecordProcessedBlock(metrics.BlockSourceBackfill)
 			}
 
-			count++
-			if count%10 == 0 {
-				backfillProcesses[common.Hash(start.Root)] = storage.BackfillProcess{Start: *start, Current: *curr}
-				_ = a.dataStoreClient.WriteBackfillProcesses(ctx, backfillProcesses)
-			}
+			backfillProcesses[common.Hash(start.Root)] = storage.BackfillProcess{Start: *start, Current: *curr}
+			_ = a.dataStoreClient.WriteBackfillProcesses(ctx, backfillProcesses)
 		}
 	}
 
